@@ -26,7 +26,6 @@ int main(int argc, char * argv[])
   }
 
   unsigned t = rand() % 5;
-  int64_t i=13;
   sleep(t);
   printf("Hello world from %d/%d (slept %u s)!\n", myRank, 1, t);
   MPI_Finalize();
