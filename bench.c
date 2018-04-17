@@ -10,7 +10,7 @@
 #include <sys/time.h>
 #include <assert.h>
 
-#define N = 30;
+#define N 30;
 
 double get_ms_to_send_bytes(int bytes) {
   MPI_Datatype MPI_BYTES;
