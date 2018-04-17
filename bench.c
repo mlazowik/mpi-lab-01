@@ -12,7 +12,7 @@
 
 #define N 30
 
-double get_ms_to_send_bytes(int bytes) {
+double get_round_trp_ms(int bytes) {
   MPI_Datatype MPI_BYTES;
   MPI_Type_contiguous(bytes, MPI_BYTE, &MPI_BYTES);
   MPI_Type_commit(&MPI_BYTES);
@@ -25,24 +25,28 @@ double get_ms_to_send_bytes(int bytes) {
 
   double startTime = 0, endTime = 0;
 
-  if (myRank == 1) {
-    MPI_Send(buf, 1, MPI_BYTES, 0, 42, MPI_COMM_WORLD);
-  } else {
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  if (myRank == 0) {
     startTime = MPI_Wtime();
+    MPI_Send(buf, 1, MPI_BYTES, 1, 42, MPI_COMM_WORLD);
     MPI_Recv(buf, 1, MPI_BYTES, 1, 42, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     endTime = MPI_Wtime();
+  } else {
+    MPI_Recv(buf, 1, MPI_BYTES, 0, 42, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Send(buf, 1, MPI_BYTES, 0, 42, MPI_COMM_WORLD);
   }
 
-  free(buf);
-
   MPI_Barrier(MPI_COMM_WORLD);
+
+  free(buf);
 
   return (endTime - startTime) * 1000;
 }
 
 double get_throughput_in_MBps(int bytes) {
-  double seconds = get_ms_to_send_bytes(bytes) / 1000;
-  return bytes / (1024 * 1024 * seconds);
+  double seconds = get_round_trp_ms(bytes) / 1000;
+  return bytes / (1024 * 1024 * seconds * 2); // * 2 because round-trip
 }
 
 double avg(const double *measurements) {
@@ -82,16 +86,16 @@ int main(int argc, char * argv[])
   double latency1[N], latency10[N], latency100[N], throughput[N];
 
   for (int i = 0; i < N; i++) {
-    latency1[i] = get_ms_to_send_bytes(1);
-    latency10[i] = get_ms_to_send_bytes(10);
-    latency100[i] = get_ms_to_send_bytes(100);
+    latency1[i] = get_round_trp_ms(1);
+    latency10[i] = get_round_trp_ms(10);
+    latency100[i] = get_round_trp_ms(100);
     throughput[i] = get_throughput_in_MBps(100 * 1024 * 1024);
   }
 
   if (myRank == 0) {
-    printf("avg 1 byte latency: %lf ms\n", avg(latency1));
-    printf("avg 10 byte latency: %lf ms\n", avg(latency10));
-    printf("avg 100 byte latency: %lf ms\n", avg(latency100));
+    printf("avg 1 byte round-trip latency: %lf ms\n", avg(latency1));
+    printf("avg 10 byte round-trip latency: %lf ms\n", avg(latency10));
+    printf("avg 100 byte round-trip latency: %lf ms\n", avg(latency100));
     printf("avg 100MB throughput: %lf MB/s\n", avg(throughput));
   }
 
