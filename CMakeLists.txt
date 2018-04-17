@@ -9,3 +9,5 @@ add_executable(mpi_lab_01
         hello-world-seq.c)
 
 add_executable(ring ring.c)
+
+add_executable(bench bench.c)
