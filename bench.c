@@ -46,7 +46,7 @@ double get_round_trp_ms(int bytes) {
 
 double get_throughput_in_MBps(int bytes) {
   double seconds = get_round_trp_ms(bytes) / 1000;
-  return bytes / (1024 * 1024 * seconds * 2); // * 2 because round-trip
+  return (bytes * 2) / (1024 * 1024 * seconds); // * 2 because round-trip
 }
 
 double avg(const double *measurements) {
