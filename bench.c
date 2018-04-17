@@ -94,8 +94,8 @@ int main(int argc, char * argv[])
     throughput[i] = get_throughput_in_MBps(100 * 1024 * 1024);
 
     for (int j = 0; j < 8; j++) {
-      double single_trip_seconds = get_round_trp_ms(bytes[j]) / 2 / 1000;
-      if (myRank == 0) printf("%d %d %.12lf\n", i, bytes[j], single_trip_seconds);
+      double rt_seconds = get_round_trp_ms(bytes[j]) / 1000;
+      if (myRank == 0) printf("%d %d %.12lf\n", i, bytes[j], rt_seconds);
     }
   }
 
