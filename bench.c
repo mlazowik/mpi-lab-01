@@ -37,12 +37,12 @@ double get_ms_to_send_bytes(int bytes) {
 
   MPI_Barrier(MPI_COMM_WORLD);
 
-  return (endTime - startTime) / 1000;
+  return (endTime - startTime) * 1000;
 }
 
 double get_throughput_in_MBps(int bytes) {
-  double seconds = get_ms_to_send_bytes(bytes) * 1000;
-  return seconds / (1024 * 1024);
+  double seconds = get_ms_to_send_bytes(bytes) / 1000;
+  return bytes / (1024 * 1024 * seconds);
 }
 
 double avg(const double *measurements) {
@@ -88,10 +88,12 @@ int main(int argc, char * argv[])
     throughput[i] = get_throughput_in_MBps(100 * 1024 * 1024);
   }
 
-  printf("avg 1 byte latency: %lf ms\n", avg(latency1));
-  printf("avg 10 byte latency: %lf ms\n", avg(latency10));
-  printf("avg 100 byte latency: %lf ms\n", avg(latency100));
-  printf("avg 100MB throughput: %lf MB/s\n", avg(throughput));
+  if (myRank == 0) {
+    printf("avg 1 byte latency: %lf ms\n", avg(latency1));
+    printf("avg 10 byte latency: %lf ms\n", avg(latency10));
+    printf("avg 100 byte latency: %lf ms\n", avg(latency100));
+    printf("avg 100MB throughput: %lf MB/s\n", avg(throughput));
+  }
 
   MPI_Finalize();
   return 0;
