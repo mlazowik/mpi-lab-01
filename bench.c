@@ -85,11 +85,18 @@ int main(int argc, char * argv[])
 
   double latency1[N], latency10[N], latency100[N], throughput[N];
 
+  int bytes[8] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000};
+
   for (int i = 0; i < N; i++) {
     latency1[i] = get_round_trp_ms(1);
     latency10[i] = get_round_trp_ms(10);
     latency100[i] = get_round_trp_ms(100);
     throughput[i] = get_throughput_in_MBps(100 * 1024 * 1024);
+
+    for (int j = 0; j < 8; j++) {
+      double single_trip_seconds = get_round_trp_ms(bytes[j]) / 2 / 1000;
+      if (myRank == 0) printf("%d %d %.12lf\n", i, bytes[j], single_trip_seconds);
+    }
   }
 
   if (myRank == 0) {
